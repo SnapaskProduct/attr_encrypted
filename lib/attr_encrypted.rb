@@ -398,14 +398,15 @@ module AttrEncrypted
       def load_iv_for_attribute(attribute, options)
         encrypted_attribute_name = options[:attribute]
         encode_iv = options[:encode_iv]
-        iv = options[:iv] || send("#{encrypted_attribute_name}_iv")
         if options[:operation] == :encrypting
           begin
-            iv = generate_iv(options[:algorithm])
+            iv = options[:iv] || generate_iv(options[:algorithm])
             iv = [iv].pack(encode_iv) if encode_iv
             send("#{encrypted_attribute_name}_iv=", iv)
           rescue RuntimeError
           end
+        elsif options[:operation] == :decrypting
+          iv = send("#{encrypted_attribute_name}_iv")
         end
         if iv && !iv.empty?
           iv = iv.unpack(encode_iv).first if encode_iv
